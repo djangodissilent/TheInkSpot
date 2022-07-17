@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate
-from users.models import User
+from theinkspot.users.models import User
 import os
 import random
 from rest_framework.exceptions import AuthenticationFailed

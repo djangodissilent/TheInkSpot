@@ -32,6 +32,8 @@ urlpatterns += [
         SpectacularSwaggerView.as_view(url_name="api-schema"),
         name="api-docs",
     ),
+     path('social_auth/', include(('theinkspot.social_auth.urls', 'social_auth'),
+                                 namespace="social_auth")),
 ]
 
 if settings.DEBUG:
