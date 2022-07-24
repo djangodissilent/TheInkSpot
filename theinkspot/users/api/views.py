@@ -13,6 +13,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import RegisterUser, UserSerializer, EmailVerificatoinSerializer
 from config.settings.local import SECRET_KEY
 from config.settings.base import EMAIL_HOST 
+# from django.core import mail
 
 
 import jwt
@@ -60,9 +61,9 @@ class RegisterUsers(generics.GenericAPIView):
         )
         email_subject = "Verify your email address"
 
-        email = EmailMessage(subject=email_subject, body=email_body, to=[user.email])
+        email = EmailMessage(subject=email_subject, body=email_body,to=[user.email])
         email.send()
-
+            
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -70,7 +71,6 @@ class VerifyEmail(generics.GenericAPIView):
     serializer_class = EmailVerificatoinSerializer
     def get(self, request):
         token = request.GET.get('token')
-
         try:
             Payload =jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
             user = User.objects.get(id=Payload['user_id'])
@@ -78,8 +78,8 @@ class VerifyEmail(generics.GenericAPIView):
                 user.is_verified=True
                 user.save()
             return Response({'email':'Successfully Activated'}, status=status.HTTP_200_OK)
-
-        except jwt.ExpiredSignatureError as identifier :
+            
+        except jwt.ExpiredSignatureError  as identifier :
             return Response({'error':'Activation Expired'}, status=status.HTTP_400_BAD_REQUEST)
 
         except jwt.exceptions.DecodeError as identifier :
