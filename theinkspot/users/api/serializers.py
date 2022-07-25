@@ -76,11 +76,3 @@ class RegisterUser(serializers.ModelSerializer):
             email=validation_data["email"],
             password=validation_data["password"],
         )
-
-
-class EmailVerificatoinSerializer(serializers.ModelSerializer):
-    token = serializers.CharField(max_length=555)
-
-    class Meta:
-        model = User
-        fields = ["token"]
