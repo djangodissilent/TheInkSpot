@@ -3,8 +3,8 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
-from config.settings.local import SECRET_KEY
 
+from config.settings.local import SECRET_KEY
 from theinkspot.users.models import User
 
 pytestmark = pytest.mark.django_db
@@ -119,7 +119,9 @@ class TestRegisterView:
             "password": "Nan123456789555Far",
             "password_confirmation": "Nan123456789555Far",
         }
-        _ = User.objects.create_user("nancy farid", "nancy_farid_1", "user@email.com", "Nan123456789555Far")
+        _ = User.objects.create_user(
+            "nancy farid", "nancy_farid_1", "user@email.com", "Nan123456789555Far"
+        )
         response = client.post("/api/users/register/", data)
         assert response.status_code == 400
 
@@ -189,6 +191,7 @@ class TestRegisterView:
         response = client.post("/api/users/register/", data)
         assert response.status_code == 400
 
+
 @pytest.mark.django_db
 class TestVerificatinMailView:
     def test_successfull_account_activation_exist_user(self, user):
@@ -209,7 +212,7 @@ class TestVerificatinMailView:
         assert request.status_code == 400
         # hard refresh the object from db
         user = User.objects.get(id=user.id)
-        assert user.is_verified is False    
+        assert user.is_verified is False
 
     def test_successfull_account_activation_for_non_existing_user(self):
         token = jwt.encode({"user_id": 562}, SECRET_KEY, algorithm="HS256")
@@ -217,4 +220,3 @@ class TestVerificatinMailView:
         url = f"{relative_link}?token={token}"
         request = client.get(url)
         assert request.status_code == 403
-

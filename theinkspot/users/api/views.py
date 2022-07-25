@@ -1,16 +1,15 @@
 # from email.message import _PayloadType
 import jwt
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMessage
 from django.urls import reverse
 from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from config.settings.local import SECRET_KEY
 
 from .serializers import RegisterUser
-from django.core.exceptions import ObjectDoesNotExist
 
 # from django.core import mail
 
@@ -73,8 +72,7 @@ class VerifyEmail(generics.GenericAPIView):
             return Response(
                 {"error": "Invalid Token"}, status=status.HTTP_400_BAD_REQUEST
             )
-        except ObjectDoesNotExist:  
+        except ObjectDoesNotExist:
             return Response(
-                {"error":"non existing user"}, status=status.HTTP_403_FORBIDDEN
+                {"error": "non existing user"}, status=status.HTTP_403_FORBIDDEN
             )
-
