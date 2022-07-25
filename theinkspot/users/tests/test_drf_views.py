@@ -1,7 +1,9 @@
+import jwt
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
+from config.settings.local import SECRET_KEY
 
 from theinkspot.users.models import User
 
@@ -109,16 +111,15 @@ class TestRegisterView:
         response = client.post("/api/users/register/", data)
         assert response.status_code == 400
 
-    def test_register_user_with_email_already_exists(self, user):
+    def test_register_user_with_email_already_exists(self):
         data = {
             "name": "nancy",
             "username": "nancy_farid_1",
-            "email": "test@email.com",
+            "email": "user@email.com",
             "password": "Nan123456789555Far",
             "password_confirmation": "Nan123456789555Far",
         }
-        # user= User.objects.create_user("nancy farid","nancy_farid","nancyfarid1@gmail.com", "Nan123456789555Far")
-        # if (User.objects.filter(email=data["email"]).first()):
+        _ = User.objects.create_user("nancy farid", "nancy_farid_1", "user@email.com", "Nan123456789555Far")
         response = client.post("/api/users/register/", data)
         assert response.status_code == 400
 
@@ -188,36 +189,15 @@ class TestRegisterView:
         response = client.post("/api/users/register/", data)
         assert response.status_code == 400
 
-    # def test_send_mail(self):
-    #     email= EmailMessage(
-    #         'Example subject here',
-    #         'Here is the message body.',
-    #         ['to@example.com']
-    #     )
-    #     email.send()
-    #     assert len(mail.outbox) == 1, "Inbox is not empty"
-    #     assert mail.outbox[0].subject == 'Example subject here'
-    #     assert mail.outbox[0].to == ['to@example.com']
-
-    # def test_no_email_sent(self):
-    #     email= EmailMessage(
-    #         'Example subject here',
-    #         'Here is the message body.',
-    #         'from@example.com',
-    #         ['']
-    #     )
-    #     email.send()
-    #     assert len(mail.outbox)== 0
-
 
 class TestVerificatinMailView:
     @pytest.mark.django_db
-    def test_successfull_account_activatin(self, user):
-        token = RefreshToken.for_user(user).access_token
-        current_site = "0.0.0.0:8000"
+    def test_successfull_account_activation(self, user):
+        token = jwt.encode({"user_id": user.id}, SECRET_KEY, algorithm="HS256")
         relative_link = reverse("api:verify-email")
-        absurl = "http://" + current_site + relative_link + "?token=" + str(token)
-        request = client.get(absurl)
-        print(request.data)
+        url = f"{relative_link}?token={token}"
+        request = client.get(url)
         assert request.status_code == 200
+        # hard refresh the object from db
+        user = User.objects.get(id=user.pk)
         assert user.is_verified is True
