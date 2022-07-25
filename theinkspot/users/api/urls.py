@@ -11,7 +11,12 @@ else:
     router = SimpleRouter()
 
 
-app_name = "api"
+app_name = "api-users"
 urlpatterns = router.urls
 
-urlpatterns += []
+urlpatterns = [
+    path("register/", RegisterUsers.as_view(), name="register"),
+    path("token/", jwt_views.TokenObtainPairView.as_view(), name="access token"),
+    path("refresh/token/", jwt_views.TokenRefreshView.as_view(), name="refresh token"),
+    path("verify-email/", VerifyEmail.as_view(), name="verify-email"),
+]

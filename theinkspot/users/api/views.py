@@ -10,6 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from config.settings.local import SECRET_KEY
 
 from .serializers import RegisterUser
+from django.core.exceptions import ObjectDoesNotExist
 
 # from django.core import mail
 
@@ -31,9 +32,9 @@ class RegisterUsers(generics.GenericAPIView):
 
         # this part needs to move to another flow https://oyasr.atlassian.net/browse/INK-40
         user = User.objects.get(email=user_data["email"])
-        token = RefreshToken.for_user(user).access_token
+        token = jwt.encode({"user_id": user.id}, SECRET_KEY, algorithm="HS256")
         current_site = "0.0.0.0:8000"
-        relative_link = reverse("api:verify-email")
+        relative_link = reverse("api-users:verify-email")
         absurl = "http://" + current_site + relative_link + "?token=" + str(token)
         email_body = (
             "Hi "
@@ -72,3 +73,8 @@ class VerifyEmail(generics.GenericAPIView):
             return Response(
                 {"error": "Invalid Token"}, status=status.HTTP_400_BAD_REQUEST
             )
+        except ObjectDoesNotExist:  
+            return Response(
+                {"error":"non existing user"}, status=status.HTTP_403_FORBIDDEN
+            )
+

@@ -189,15 +189,32 @@ class TestRegisterView:
         response = client.post("/api/users/register/", data)
         assert response.status_code == 400
 
-
+@pytest.mark.django_db
 class TestVerificatinMailView:
-    @pytest.mark.django_db
-    def test_successfull_account_activation(self, user):
+    def test_successfull_account_activation_exist_user(self, user):
         token = jwt.encode({"user_id": user.id}, SECRET_KEY, algorithm="HS256")
-        relative_link = reverse("api:verify-email")
+        relative_link = reverse("api-users:verify-email")
         url = f"{relative_link}?token={token}"
         request = client.get(url)
         assert request.status_code == 200
         # hard refresh the object from db
         user = User.objects.get(id=user.pk)
         assert user.is_verified is True
+
+    def test_successfull_account_activation_invalid_token(self, user):
+        token = RefreshToken.for_user(user).access_token
+        relative_link = reverse("api-users:verify-email")
+        url = f"{relative_link}?token={token}"
+        request = client.get(url)
+        assert request.status_code == 400
+        # hard refresh the object from db
+        user = User.objects.get(id=user.id)
+        assert user.is_verified is False    
+
+    def test_successfull_account_activation_for_non_existing_user(self):
+        token = jwt.encode({"user_id": 562}, SECRET_KEY, algorithm="HS256")
+        relative_link = reverse("api-users:verify-email")
+        url = f"{relative_link}?token={token}"
+        request = client.get(url)
+        assert request.status_code == 403
+
