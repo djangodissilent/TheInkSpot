@@ -70,3 +70,22 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
+
+
+class UserFollow(models.Model):
+    follower_user = models.ForeignKey("User", related_name="following", on_delete=models.CASCADE)
+    followed_user = models.ForeignKey("User", related_name="followers", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("follower_user", "followed_user")
+        ordering = ["-created_at"]
+
+    # disallow following yourself
+    def save(self, *args, **kwargs):
+        if self.followed_user == self.follower_user:
+            raise ValueError("You cannot follow yourself")
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.follower_user.username} follows {self.followed_user.username}"

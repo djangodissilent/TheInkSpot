@@ -1,6 +1,7 @@
 import pytest
 
-from theinkspot.users.models import User
+from theinkspot.users.models import User, UserFollow
+from django.db import IntegrityError
 
 pytestmark = pytest.mark.django_db
 
@@ -74,3 +75,49 @@ class TestUserModel:
     def test_create_super_user(self, superuser):
         is_user_a_superuser = superuser.is_superuser
         assert is_user_a_superuser is True
+
+
+@pytest.mark.django_db
+class TestUserFollow:
+    def test_follow_user(self, user, user2):
+        UserFollow.objects.create(follower_user=user2, followed_user=user)
+        assert user2.following.count() == 1
+        assert user.followers.count() == 1
+        assert user.followers.first().follower_user == user2
+        assert user2.following.first().followed_user == user
+
+    def test_follow_self(self, user):
+        with pytest.raises(ValueError):
+            UserFollow(follower_user=user, followed_user=user).save()
+
+    def test_follow_already_followed_user(self, user, user2):
+        UserFollow.objects.create(follower_user=user2, followed_user=user)
+        with pytest.raises(IntegrityError):
+            UserFollow.objects.create(follower_user=user2, followed_user=user)
+
+    def test_unfollow_user(self, user, user2):
+        UserFollow.objects.create(follower_user=user2, followed_user=user)
+        user.followers.first().delete()
+        assert user.followers.count() == 0
+        assert user2.following.count() == 0
+
+    def test_unfollow_already_unfollowed_user(self, user, user2):
+        UserFollow.objects.create(follower_user=user2, followed_user=user)
+        user.followers.first().delete()
+        assert user.followers.count() == 0
+        assert user2.following.count() == 0
+
+        with pytest.raises(AttributeError):
+            user.followers.first().delete()
+
+    def test_follow_unfollow_user(self, user, user2):
+        UserFollow.objects.create(follower_user=user2, followed_user=user)
+        user.followers.first().delete()
+        assert user.following.count() == 0
+        assert user2.followers.count() == 0
+
+        UserFollow.objects.create(follower_user=user2, followed_user=user)
+        assert user.followers.count() == 1
+        assert user2.following.count() == 1
+        assert user.followers.first().follower_user == user2
+        assert user2.following.first().followed_user == user
