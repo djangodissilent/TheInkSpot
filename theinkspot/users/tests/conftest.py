@@ -54,6 +54,7 @@ def user(db) -> User:
         password="Am0123456789123456",
     )
 
+
 @pytest.fixture
 def user2(db) -> User:
     return User.objects.create_user(

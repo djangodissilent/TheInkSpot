@@ -73,8 +73,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class UserFollow(models.Model):
-    follower_user = models.ForeignKey("User", related_name="following", on_delete=models.CASCADE)
-    followed_user = models.ForeignKey("User", related_name="followers", on_delete=models.CASCADE)
+    follower_user = models.ForeignKey(
+        "User", related_name="following", on_delete=models.CASCADE
+    )
+    followed_user = models.ForeignKey(
+        "User", related_name="followers", on_delete=models.CASCADE
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

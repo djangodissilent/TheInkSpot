@@ -47,5 +47,12 @@ class UserAdmin(auth_admin.UserAdmin):
 
 @admin.register(UserFollow)
 class UserFollowAdmin(admin.ModelAdmin):
-    list_display = ['id', 'followed_user', 'follower_user', ]
-    search_fields = ['followed_user', 'follower_user', ]
+    list_display = [
+        "id",
+        "followed_user",
+        "follower_user",
+    ]
+    search_fields = [
+        "followed_user",
+        "follower_user",
+    ]
