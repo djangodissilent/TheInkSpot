@@ -83,7 +83,6 @@ class UserFollow(models.Model):
 
     class Meta:
         unique_together = ("follower_user", "followed_user")
-        ordering = ["-created_at"]
 
     # disallow following yourself
     def save(self, *args, **kwargs):
